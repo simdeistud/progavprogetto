@@ -109,8 +109,10 @@ public class RequestParser {
 
     } while (req.toString().charAt(cursor++) == ',');
 
+    cursor--; // the cursor skips the ; we need to bring it back by one position
+
     matcher = Pattern.compile(";").matcher(req.toString());
-    if (!matcher.find(cursor-1) || cursor-1 != matcher.start()) {
+    if (!matcher.find(cursor) || cursor != matcher.start()) {
       throw new MalformedRequestException("Missing semicolon after last VariableValuesFunction");
     } else {
       token = new Token(cursor-1, matcher.end());
@@ -127,8 +129,8 @@ public class RequestParser {
           expressions.add(exprParser.parse());
           cursor = req.toString().length()-1;
         } else {
-          token = new Token(cursor, matcher.end());
-          ExpressionParser exprParser = new ExpressionParser(req.toString().substring(token.start, token.end-1));
+          token = new Token(cursor, matcher.start());
+          ExpressionParser exprParser = new ExpressionParser(req.toString().substring(token.start, token.end));
           expressions.add(exprParser.parse());
           cursor = token.end;
         }
@@ -136,7 +138,7 @@ public class RequestParser {
         throw new MalformedRequestException("Invalid expression syntax: " + e.getMessage());
       }
 
-    } while (req.toString().charAt(cursor-1) == ';');
+    } while (req.toString().charAt(cursor++) == ';');
     //capire il casino degli indici...
 
     return new CompRequest(req.toString(), tokens, requestType, computationKind, valuesKind, variableValues, expressions);

@@ -162,19 +162,19 @@ public class ClientHandler extends Thread {
       // You should feed this function a null VariableValue in case it is not present in the declaration
       Function<CompRequest.VariableValue, Set<Double>> a = variableValue -> {
         Set<Double> result = new LinkedHashSet<>();
-        //cambiare in un HashSet e aggiungere un comparatore quando si deve iterare
         if (variableValue == null) {
           result = null;
         } else {
           for (double x = variableValue.startingVal(); x <= variableValue.finalVal(); x += variableValue.step()) {
             result.add(x);
           }
+          result.add(variableValue.finalVal());
         }
         return result;
       };
 
       // Step 2 : building of value tuples T from a
-      Set<ValueTuple> T = getTupleBuilder(req.valuesKind()).apply(req.variableValues().stream().map(a).toList());
+      Set<ValueTuple> T = getTupleBuilder(req.valuesKind()).apply(req.variableValues().parallelStream().map(a).toList());
       if(T == null){
         throw new MalformedRequestException(switch (req.valuesKind()){
           case GRID -> "The range of one of the variables is the empty set";
