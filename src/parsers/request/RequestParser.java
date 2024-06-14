@@ -137,7 +137,6 @@ public class RequestParser {
       }
 
     } while (req.toString().charAt(cursor++) == ';');
-    //capire il casino degli indici...
 
     return new CompRequest(req.toString(), tokens, requestType, computationKind, valuesKind, variableValues, expressions);
 
