@@ -51,8 +51,11 @@ public class CompRequest extends TokenizedRequest {
 
   public record VariableValue(String name, Double startingVal, Double step, Double finalVal) {
     public VariableValue {
-      if (step <= 0) {
-        throw new IllegalArgumentException("step must be greater than 0");
+      if(step <= 0){
+        throw new IllegalArgumentException("Step value for " + name + " must be >= 0");
+      }
+      if(finalVal < startingVal){
+        throw new IllegalArgumentException("End of the range of " + name + " cannot be smaller than the start of the range");
       }
     }
   }

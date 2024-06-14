@@ -49,7 +49,7 @@ public class ClientHandler extends Thread {
       TokenizedRequest request;
 
       try {
-        request = RequestParser.parse(candidateReq);
+        request = new RequestParser(candidateReq).parse();
       } catch (MalformedRequestException e) {
         logError("Failed to parse request (" + e.getMessage() + ")");
         transmitErrorResponse(e.getMessage());
