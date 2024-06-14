@@ -10,7 +10,13 @@ import java.util.regex.Pattern;
 
 public class RequestParser {
 
-  public static TokenizedRequest parse(Request req) throws MalformedRequestException {
+  private final Request req;
+
+  public RequestParser(Request req){
+    this.req = req;
+  }
+
+  public TokenizedRequest parse() throws MalformedRequestException {
     return switch (req.toString()) {
       case "BYE" -> new QuitRequest(req.toString(), List.of(req.toString()), TokenizedRequest.RequestType.QUIT);
       case "STAT_REQS" ->
@@ -19,11 +25,11 @@ public class RequestParser {
               new StatRequest(req.toString(), List.of(req.toString()), TokenizedRequest.RequestType.STAT, StatRequest.StatKind.AVG_TIME);
       case "STAT_MAX_TIME" ->
               new StatRequest(req.toString(), List.of(req.toString()), TokenizedRequest.RequestType.STAT, StatRequest.StatKind.MAX_TIME);
-      default -> parseComputationRequest(req);
+      default -> parseComputationRequest();
     };
   }
 
-  private static TokenizedRequest parseComputationRequest(Request req) throws MalformedRequestException {
+  private TokenizedRequest parseComputationRequest() throws MalformedRequestException {
     int cursor = 0;
     final List<String> tokens = new ArrayList<>();
     final TokenizedRequest.RequestType requestType;
@@ -89,28 +95,22 @@ public class RequestParser {
     // parses the values functions
     do {
 
-      matcher = Pattern.compile("[a-z][a-z0-9]:-?[0-9]+(\\.[0-9]+)?:[0-9]+(\\.[0-9]+)?:-?[0-9]+(\\.[0-9]+)?").matcher(req.toString());
+      matcher = Pattern.compile("[a-z][a-z0-9]:[^:]*:[^:]*:[^,;]*[,;]").matcher(req.toString());
       if (!matcher.find(cursor) || cursor != matcher.start()) {
         throw new MalformedRequestException("VariableValues syntax does not match VarName:JavaNum:JavaNum:JavaNum");
       } else {
-        token = new Token(cursor, matcher.end());
+        token = new Token(cursor, matcher.end()-1);
         tokens.add(req.toString().substring(token.start, token.end));
         variableValues.add(parseVariableValue(req.toString().substring(token.start, token.end)));
         cursor = token.end;
       }
 
-      /*matcher = Pattern.compile(",").matcher(req.toString());
-      if (!matcher.find(cursor) || cursor != matcher.start()) {
-        throw new MalformedRequestException("Missing colon at the end of a VariableValue");
-      } else {
-        token = new Token(cursor, matcher.end());
-        cursor = token.end;
-      }*/
-
     } while (req.toString().charAt(cursor++) == ',');
 
+    cursor--; // the cursor skips the ; we need to bring it back by one position
+
     matcher = Pattern.compile(";").matcher(req.toString());
-    if (!matcher.find(cursor-1) || cursor-1 != matcher.start()) {
+    if (!matcher.find(cursor) || cursor != matcher.start()) {
       throw new MalformedRequestException("Missing semicolon after last VariableValuesFunction");
     } else {
       token = new Token(cursor-1, matcher.end());
@@ -127,8 +127,8 @@ public class RequestParser {
           expressions.add(exprParser.parse());
           cursor = req.toString().length()-1;
         } else {
-          token = new Token(cursor, matcher.end());
-          ExpressionParser exprParser = new ExpressionParser(req.toString().substring(token.start, token.end-1));
+          token = new Token(cursor, matcher.start());
+          ExpressionParser exprParser = new ExpressionParser(req.toString().substring(token.start, token.end));
           expressions.add(exprParser.parse());
           cursor = token.end;
         }
@@ -136,8 +136,7 @@ public class RequestParser {
         throw new MalformedRequestException("Invalid expression syntax: " + e.getMessage());
       }
 
-    } while (req.toString().charAt(cursor-1) == ';');
-    //capire il casino degli indici...
+    } while (req.toString().charAt(cursor++) == ';');
 
     return new CompRequest(req.toString(), tokens, requestType, computationKind, valuesKind, variableValues, expressions);
 
@@ -154,6 +153,7 @@ public class RequestParser {
     } catch (IllegalArgumentException e) {
       throw new MalformedRequestException(e.getMessage());
     }
+
     return varValue;
   }
 

@@ -46,7 +46,7 @@ public class ExpressionParser {
 
   public Node parse() throws IllegalArgumentException {
     if(this.string.isEmpty()){
-      throw new IllegalArgumentException("Expression is empty"); // se l'espressione è vuota alla fine del metodo avviene una IndexOutOfBounds con il charAt(cursor)
+      throw new IllegalArgumentException("Expression is empty");
     }
     Token token;
     token = TokenType.CONSTANT.next(string, cursor);
@@ -78,6 +78,9 @@ public class ExpressionParser {
       if (closedBracketToken != null && closedBracketToken.start == cursor) {
         cursor = closedBracketToken.end;
       } else {
+        if(cursor == string.length()){
+          throw new IllegalArgumentException("Missing a closed bracket at the end of the expression");
+        }
         throw new IllegalArgumentException(String.format(
                 "Unexpected char at %d instead of closed bracket: '%s'",
                 cursor,
