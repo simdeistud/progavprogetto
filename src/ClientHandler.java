@@ -109,6 +109,10 @@ public class ClientHandler extends Thread {
     Server.logMessage("Error : " + msg, System.err);
   }
 
+
+
+
+
   static class RequestHandler {
 
     static String generateResponse(TokenizedRequest request) throws ExecutionException, InterruptedException, MalformedRequestException {
@@ -163,7 +167,7 @@ public class ClientHandler extends Thread {
       // This function takes a VariableValue declaration and turns it into a set of real values
       // You should feed this function a null VariableValue in case it is not present in the declaration
       Function<CompRequest.VariableValue, Set<Double>> a = variableValue -> {
-        Set<Double> result = new LinkedHashSet<>();
+        Set<Double> result = new LinkedHashSet<>(); // we use a LinkedHashSet because the range has an inherent order, and we save on having to use a comparator after
         if (variableValue == null) {
           result = null;
         } else {
@@ -193,7 +197,7 @@ public class ClientHandler extends Thread {
           double max = Double.NEGATIVE_INFINITY;
           for (Expression e : req.expressions()) {
             for (ValueTuple t : T) {
-              Map<String, Double> input = new HashMap<>();
+              Map<String, Double> input = new HashMap<>();  // this map tells us what value to substitute for each variable inside the expression
               int c = 0;
               for (CompRequest.VariableValue v : req.variableValues()) {
                 input.put(v.name(), t.values[c++]);
@@ -247,7 +251,7 @@ public class ClientHandler extends Thread {
             return null;
           }
         }
-        Set<ValueTuple> result = ValueTuple.getValueTuples(sets.getFirst());
+        Set<ValueTuple> result = ValueTuple.valueSetToTupleSet(sets.getFirst());
         for (int i = 1; i < sets.size(); i++) {
           Set<ValueTuple> tmpResult = new HashSet<>();
           for (ValueTuple t : result) {
@@ -318,15 +322,15 @@ public class ClientHandler extends Thread {
         return result;
       }
 
-      static Set<ValueTuple> getValueTuples(Set<Double> setToTuple) {
+      static Set<ValueTuple> valueSetToTupleSet(Set<Double> setToTuple) {
         Set<ValueTuple> setTupled = new HashSet<>();
         for (Double d : setToTuple) {
-          setTupled.add(getTupleFromValue(d));
+          setTupled.add(valueToTuple(d));
         }
         return setTupled;
       }
 
-      static ValueTuple getTupleFromValue(Double d) {
+      static ValueTuple valueToTuple(Double d) {
         return new ValueTuple(new Double[]{d});
       }
 
