@@ -56,7 +56,7 @@ public class Server {
       maxRespTimeInMillis = respTime;
     }
 
-    avgRespTimeInMillis = ((avgRespTimeInMillis * numOfOkResps - 1) + respTime) / numOfOkResps; // funziona?
+    avgRespTimeInMillis = ((avgRespTimeInMillis * (numOfOkResps - 1)) + respTime) / numOfOkResps;
 
   }
 
