@@ -18,7 +18,7 @@ public class CompRequest extends TokenizedRequest {
     this.compKind = compKind;
     this.valKind = valKind;
     this.variableValues = variableValues;
-    this.expressions = expressions.stream().map(Expression::new).toList();
+    this.expressions = expressions.parallelStream().map(Expression::new).toList();
   }
 
   public ComputationKind kind() {
