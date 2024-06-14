@@ -74,6 +74,8 @@ public class ClientHandler extends Thread {
 
       transmitOkResponse(resp, responseTime);
 
+      logInfo("Replied to " + socket.getInetAddress() + " with \"" + resp +  "\"");
+
     } while (true);
 
     try {
