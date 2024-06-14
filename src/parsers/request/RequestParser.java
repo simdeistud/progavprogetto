@@ -113,7 +113,7 @@ public class RequestParser {
     if (!matcher.find(cursor) || cursor != matcher.start()) {
       throw new MalformedRequestException("Missing semicolon after last VariableValuesFunction");
     } else {
-      token = new Token(cursor-1, matcher.end());
+      token = new Token(cursor, matcher.end());
       cursor = token.end;
     }
 
